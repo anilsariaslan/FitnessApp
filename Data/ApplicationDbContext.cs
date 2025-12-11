@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using FitnessApp.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitnessApp.Data
@@ -9,5 +10,10 @@ namespace FitnessApp.Data
             : base(options)
         {
         }
+
+        // Tablolarımız
+        public DbSet<SalonHizmeti> SalonHizmetleri { get; set; }
+        public DbSet<Egitmen> Egitmenler { get; set; }
+        public DbSet<Randevu> Randevular { get; set; }
     }
 }
