@@ -10,8 +10,18 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+// Identity ayarlarý (Burasý KESÝN böyle olmalý)
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = true; // Mail onayý istersen true kalsýn
+    options.Password.RequireDigit = false;         // Þifre zorluk ayarlarý (Ýstersen gevþetebilirsin)
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 3; // Þifre en az 3 hane olsun (sau þifresi için)
+})
+.AddRoles<IdentityRole>() // <--- Rol mekanizmasýný açan kilit kod
+.AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -39,5 +49,13 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+// --- SEED DATA (Otomatik Veri) BAÞLANGICI ---
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    // DbSeeder sýnýfýndaki metodu çalýþtýr
+    await DbSeeder.SeedRolesAndAdminAsync(services);
+}
+// --- SEED DATA BÝTÝÞÝ ---
 
 app.Run();

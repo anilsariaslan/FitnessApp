@@ -23,4 +23,4 @@ namespace FitnessApp.Models
         // İlişki: Bu hizmeti veren eğitmenler
         public virtual ICollection<Egitmen> Egitmenler { get; set; }
     }
-}
+}   
