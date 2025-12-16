@@ -1,0 +1,57 @@
+﻿@model FitnessApp.Models.Egitmen
+
+@{
+    ViewData["Title"] = "Eğitmen Ekle";
+}
+
+<h1>Yeni Eğitmen Ekle</h1>
+
+<h4>Eğitmen Bilgileri</h4>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group mb-3">
+                <label asp-for="AdSoyad" class="control-label"></label>
+                <input asp-for="AdSoyad" class="form-control" />
+                <span asp-validation-for="AdSoyad" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="UzmanlikAlani" class="control-label"></label>
+                <input asp-for="UzmanlikAlani" class="form-control" placeholder="Örn: Kilo Verme, Pilates" />
+                <span asp-validation-for="UzmanlikAlani" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="SalonHizmetiId" class="control-label">Verdiği Hizmet</label>
+                <select asp-for="SalonHizmetiId" class="form-control" asp-items="ViewBag.SalonHizmetiId"></select>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="CalismaSaatleri" class="control-label"></label>
+                <input asp-for="CalismaSaatleri" class="form-control" placeholder="Örn: 09:00-17:00" />
+                <span asp-validation-for="CalismaSaatleri" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ResimYolu" class="control-label">Resim Linki (Opsiyonel)</label>
+                <input asp-for="ResimYolu" class="form-control" />
+                <span asp-validation-for="ResimYolu" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Kaydet" class="btn btn-success" />
+                <a asp-action="Index" class="btn btn-secondary">Listeye Dön</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
