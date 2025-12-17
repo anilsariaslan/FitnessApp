@@ -48,7 +48,14 @@ namespace FitnessApp.Controllers
         // GET: Egitmen/Create
         public IActionResult Create()
         {
-            ViewData["SalonHizmetiId"] = new SelectList(_context.SalonHizmetleri, "Id", "Ad");
+            // Veritabanından verileri çekiyoruz
+            var hizmetListesi = _context.SalonHizmetleri.ToList();
+
+            // Özel isimle ("Hizmetler") kutuya gönderiyoruz. 
+            // "Id": Arka planda tutulacak değer (1, 2, 3)
+            // "Ad": Ekranda görünecek isim (Yoga, Fitness)
+            ViewData["Hizmetler"] = new SelectList(hizmetListesi, "Id", "Ad");
+
             return View();
         }
 
