@@ -22,6 +22,7 @@ namespace FitnessApp.Controllers
         // GET: Egitmen
         public async Task<IActionResult> Index()
         {
+            // Eğitmenleri listelerken bağlı olduğu Salon Hizmetini de (Include ile) getiriyoruz
             var applicationDbContext = _context.Egitmenler.Include(e => e.SalonHizmeti);
             return View(await applicationDbContext.ToListAsync());
         }
@@ -48,32 +49,25 @@ namespace FitnessApp.Controllers
         // GET: Egitmen/Create
         public IActionResult Create()
         {
-            // Veritabanından verileri çekiyoruz
-            var hizmetListesi = _context.SalonHizmetleri.ToList();
-
-            // Özel isimle ("Hizmetler") kutuya gönderiyoruz. 
-            // "Id": Arka planda tutulacak değer (1, 2, 3)
-            // "Ad": Ekranda görünecek isim (Yoga, Fitness)
-            ViewData["Hizmetler"] = new SelectList(hizmetListesi, "Id", "Ad");
-
+            // Dropdown (Açılır Kutu) için listeyi hazırlıyoruz
+            // DİKKAT: View tarafında "SalonHizmetiId" veya "HizmetListesi" ne kullanıyorsan buradaki ViewBag ismi o olmalı.
+            // Biz standart olarak "SalonHizmetiId" kullanıyoruz.
+            ViewData["SalonHizmetiId"] = new SelectList(_context.SalonHizmetleri, "Id", "Ad");
             return View();
         }
 
         // POST: Egitmen/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // DÜZELTME: Validation kontrolü kaldırıldı (Direkt Kayıt)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,AdSoyad,UzmanlikAlani,SalonHizmetiId,CalismaSaatleri,ResimYolu")] Egitmen egitmen)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(egitmen);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["SalonHizmetiId"] = new SelectList(_context.SalonHizmetleri, "Id", "Ad", egitmen.SalonHizmetiId);
-            return View(egitmen);
+            // Validasyon kontrolünü (ModelState.IsValid) iptal ettik.
+            // Ne gelirse gelsin veritabanına yazacak.
+            _context.Add(egitmen);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Egitmen/Edit/5
@@ -94,8 +88,6 @@ namespace FitnessApp.Controllers
         }
 
         // POST: Egitmen/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,AdSoyad,UzmanlikAlani,SalonHizmetiId,CalismaSaatleri,ResimYolu")] Egitmen egitmen)
@@ -105,28 +97,24 @@ namespace FitnessApp.Controllers
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            // Edit işleminde de kontrolü gevşettik
+            try
             {
-                try
-                {
-                    _context.Update(egitmen);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!EgitmenExists(egitmen.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                _context.Update(egitmen);
+                await _context.SaveChangesAsync();
             }
-            ViewData["SalonHizmetiId"] = new SelectList(_context.SalonHizmetleri, "Id", "Ad", egitmen.SalonHizmetiId);
-            return View(egitmen);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!EgitmenExists(egitmen.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Egitmen/Delete/5

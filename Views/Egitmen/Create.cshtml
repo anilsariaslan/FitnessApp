@@ -27,11 +27,9 @@
 
             <div class="form-group mb-3">
                 <label asp-for="SalonHizmetiId" class="control-label">Verdiği Hizmet</label>
-
-                <select asp-for="SalonHizmetiId" class="form-control" asp-items="ViewBag.Hizmetler">
+                <select asp-for="SalonHizmetiId" class="form-control" asp-items="ViewBag.SalonHizmetiId">
                     <option value="">-- Hizmet Seçiniz --</option>
                 </select>
-
                 <span asp-validation-for="SalonHizmetiId" class="text-danger"></span>
             </div>
 

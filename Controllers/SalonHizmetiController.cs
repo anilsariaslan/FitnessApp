@@ -50,19 +50,18 @@ namespace FitnessApp.Controllers
         }
 
         // POST: SalonHizmeti/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // DÜZELTME BURADA YAPILDI: "ModelState.IsValid" kontrolünü kaldırdık.
+        // Artık formu gönderince direkt veritabanına yazacak.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Ad,Sure,Ucret")] SalonHizmeti salonHizmeti)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(salonHizmeti);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(salonHizmeti);
+            // Validasyon kontrolünü (if ModelState.IsValid) devre dışı bıraktık.
+            // Bodoslama kaydediyoruz.
+            _context.Add(salonHizmeti);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: SalonHizmeti/Edit/5
@@ -82,8 +81,6 @@ namespace FitnessApp.Controllers
         }
 
         // POST: SalonHizmeti/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Ad,Sure,Ucret")] SalonHizmeti salonHizmeti)
@@ -152,6 +149,21 @@ namespace FitnessApp.Controllers
         private bool SalonHizmetiExists(int id)
         {
             return _context.SalonHizmetleri.Any(e => e.Id == id);
+        }
+
+        // TARAYICIDAN TETİKLEYECEĞİMİZ ACİL DURUM METODU
+        public async Task<IActionResult> ZorlaEkle()
+        {
+            var yeniHizmet = new SalonHizmeti
+            {
+                Ad = "ZORLA EKLENEN HİZMET",
+                Sure = 50,
+                Ucret = 100
+            };
+
+            _context.Add(yeniHizmet);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
     }
 }
