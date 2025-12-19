@@ -1,0 +1,37 @@
+﻿@model FitnessApp.Models.Randevu
+
+@{
+    ViewData["Title"] = "Randevu Al";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3>@ViewBag.EgitmenAd İle Randevu Oluştur</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="RandevuAl">
+
+                <input type="hidden" asp-for="EgitmenId" />
+
+                <div class="form-group mb-3">
+                    <label asp-for="Tarih" class="control-label fw-bold">Tarih Seçiniz</label>
+                    <input asp-for="Tarih" type="date" class="form-control" />
+                    <span asp-validation-for="Tarih" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Saat" class="control-label fw-bold">Saat Seçiniz</label>
+                    <input asp-for="Saat" type="time" class="form-control" />
+                    <span asp-validation-for="Saat" class="text-danger"></span>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Randevunuz otomatik olarak hesabınıza tanımlanacaktır.
+                </div>
+
+                <button type="submit" class="btn btn-success btn-lg w-100">Randevuyu Onayla</button>
+            </form>
+        </div>
+    </div>
+</div>

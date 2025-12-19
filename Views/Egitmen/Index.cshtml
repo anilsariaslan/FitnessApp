@@ -30,6 +30,9 @@
                     @Html.DisplayFor(modelItem => item.SalonHizmeti.Ad)
                 </td>
                 <td>
+                    <a asp-controller="Randevular" asp-action="RandevuAl" asp-route-egitmenId="@item.Id" class="btn btn-success btn-sm">
+                        📅 Randevu Al
+                    </a>
                     <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Düzenle</a>
                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Detay</a>
                     <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Sil</a>
