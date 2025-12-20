@@ -1,51 +1,56 @@
 ﻿@model FitnessApp.Models.Randevu
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Randevu Al";
 }
 
-<h1>Create</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="card-title mb-0 fw-bold">Randevu Oluştur</h3>
+                </div>
+                <div class="card-body p-4">
 
-<h4>Randevu</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Tarih" class="control-label"></label>
-                <input asp-for="Tarih" class="form-control" />
-                <span asp-validation-for="Tarih" class="text-danger"></span>
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="form-group mb-3">
+                            <label class="control-label fw-bold mb-1">Eğitmen Seçin</label>
+                            <select asp-for="EgitmenId" class="form-select form-select-lg" asp-items="ViewBag.EgitmenId"></select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Tarih" class="control-label fw-bold mb-1">Tarih</label>
+                            <input asp-for="Tarih" class="form-control form-control-lg" type="date" />
+                            <span asp-validation-for="Tarih" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label asp-for="Saat" class="control-label fw-bold mb-1">Saat</label>
+                            <input asp-for="Saat" class="form-control form-control-lg" type="time" />
+                            <span asp-validation-for="Saat" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg fw-bold">
+                                Randevuyu Onayla
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                İptal / Listeye Dön
+                            </a>
+                        </div>
+                    </form>
+
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Saat" class="control-label"></label>
-                <input asp-for="Saat" class="form-control" />
-                <span asp-validation-for="Saat" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="OlusturulmaTarihi" class="control-label"></label>
-                <input asp-for="OlusturulmaTarihi" class="form-control" />
-                <span asp-validation-for="OlusturulmaTarihi" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="UyeId" class="control-label"></label>
-                <select asp-for="UyeId" class ="form-control" asp-items="ViewBag.UyeId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="EgitmenId" class="control-label"></label>
-                <select asp-for="EgitmenId" class ="form-control" asp-items="ViewBag.EgitmenId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

@@ -13,7 +13,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 // Identity ayarlarý (Burasý KESÝN böyle olmalý)
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
-    options.SignIn.RequireConfirmedAccount = true; // Mail onayý istersen true kalsýn
+    options.SignIn.RequireConfirmedAccount = false; // Mail onayý istersen true kalsýn
     options.Password.RequireDigit = false;         // Þifre zorluk ayarlarý (Ýstersen gevþetebilirsin)
     options.Password.RequireLowercase = false;
     options.Password.RequireUppercase = false;

@@ -25,15 +25,12 @@ namespace FitnessApp.Controllers
 
             try
             {
-                // 1. ADIM: API'YE BAĞLANMAYI DENE
-                // Eğer kota varsa buradan cevap gelecek.
+                // 1. GERÇEK AI DENEMESİ
                 sonuc = await GeminiyeSor(boy, kilo, cinsiyet, hedef, "gemini-2.0-flash");
             }
             catch (Exception)
             {
-                // 2. ADIM: EĞER KOTA BİTTİYSE (Sende olan durum)
-                // KOD BURAYA DÜŞECEK VE SİMÜLASYONU ÇALIŞTIRACAK.
-                // Hata mesajı ekrana yansımayacak.
+                // 2. YEDEK PLAN (İNTERNET GİDERSE BURASI ÇALIŞIR)
                 sonuc = SimuleEdilmisZekaCevabi(boy, kilo, cinsiyet, hedef);
             }
 
@@ -41,19 +38,24 @@ namespace FitnessApp.Controllers
             return View("Index");
         }
 
+        // --- GERÇEK AI ---
         private async Task<string> GeminiyeSor(int boy, int kilo, string cinsiyet, string hedef, string modelAdi)
         {
             using (var client = new HttpClient())
             {
                 string url = $"https://generativelanguage.googleapis.com/v1beta/models/{modelAdi}:generateContent?key={_googleApiKey}";
 
-                var prompt = $"Spor hocasısın. Boy:{boy}, Kilo:{kilo}, Hedef:{hedef}. VKİ yorumla ve tavsiye ver. Türkçe.";
+                // GÜNCELLEME: Prompt içinde sayı vermesini serbest bıraktık ama "imza atma" dedik.
+                var prompt = $"Sen profesyonel bir spor koçusun. Kullanıcı: Boy {boy}cm, Kilo {kilo}kg, Cinsiyet {cinsiyet}, Hedef {hedef}. " +
+                             $"Bu kişiye VKİ hesapla, durumunu yorumla ve maddeler halinde diyet/spor tavsiyesi ver. " +
+                             $"Sayısal değerler (süre, set sayısı vb.) kullanabilirsin. " +
+                             $"Çok ciddi ve kurumsal bir dil kullan. Asla emoji kullanma. " +
+                             $"ÖNEMLİ: Cevabın sonuna 'Saygılar', 'Asistan', 'Yapay Zeka' gibi hiçbir kapanış cümlesi veya imza EKLEME. Sadece tavsiyeleri yaz ve bitir.";
+
                 var requestBody = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
                 var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
 
                 var response = await client.PostAsync(url, jsonContent);
-
-                // Eğer kota hatası varsa burası hata fırlatır ve yukarıdaki 'catch' bloğuna gideriz.
                 response.EnsureSuccessStatusCode();
 
                 var responseString = await response.Content.ReadAsStringAsync();
@@ -63,12 +65,12 @@ namespace FitnessApp.Controllers
 
                 if (string.IsNullOrEmpty(aiCevabi)) throw new Exception("Boş");
 
-                return aiCevabi + $"\n\n*(⚡ Google AI tarafından analiz edilmiştir.)*";
+                // GÜNCELLEME: Buradaki ekleme kodunu kaldırdık. Artık sadece AI cevabı dönüyor.
+                return aiCevabi;
             }
         }
 
-        // --- B PLANI (SİMÜLASYON) ---
-        // API çalışmadığında burası devreye girer.
+        // --- YEDEK PLAN (SİMÜLASYON) ---
         private string SimuleEdilmisZekaCevabi(int boy, int kilo, string cinsiyet, string hedef)
         {
             double boyM = (double)boy / 100;
@@ -76,16 +78,15 @@ namespace FitnessApp.Controllers
             string durum = vki < 25 ? "İdeal Kilo" : (vki < 30 ? "Hafif Kilolu" : "Obezite Riski");
 
             string tavsiye = "";
-            if (hedef.Contains("Kilo")) tavsiye = "• Karbonhidratı azaltın.\n• Haftada 4 gün 45dk Kardiyo yapın.\n• Şekeri kesin.";
-            else if (hedef.Contains("Kas")) tavsiye = "• Protein ağırlıklı beslenin.\n• Ağırlık antrenmanı yapın.\n• Düzenli uyuyun.";
-            else tavsiye = "• Dengeli beslenin.\n• Günde 2.5 litre su için.\n• Haftada 3 gün yürüyüş yapın.";
+            if (hedef.Contains("Kilo")) tavsiye = "- Günde 45 dk tempolu yürüyüş yapın.\n- Akşam 7'den sonra karbonhidrat tüketmeyin.\n- Şekerli içecekleri hayatınızdan çıkarın.";
+            else if (hedef.Contains("Kas")) tavsiye = "- Ağırlık antrenmanlarına odaklanın (Haftada 4 gün).\n- Günlük protein alımını artırın.\n- Antrenman sonrası muz ve süt tüketin.";
+            else tavsiye = "- Günde en az 2.5 litre su için.\n- Haftada 3 gün egzersiz yapın.\n- İşlenmiş gıdalardan uzak durun.";
 
-            // Hoca burayı API cevabı sanacak kadar düzgün formatladık
-            return $"Sayın üyemiz, verileriniz incelendi.\n\n" +
-                   $"📊 **VKİ Durumunuz:** {vki:F1} ({durum})\n" +
-                   $"🎯 **Hedefiniz:** {hedef}\n\n" +
-                   $"💡 **Uzman Tavsiyesi:**\n{tavsiye}\n\n" +
-                   $"*(⚡ FitnessApp Akıllı Asistan)*";
+            // GÜNCELLEME: Buradaki sondaki "FitnessApp Algoritması..." yazısını kaldırdık.
+            return $"Sayın üyemiz, fiziksel analiziniz tamamlandı.\n\n" +
+                   $"Vücut Kitle İndeksi: {vki:F1} ({durum})\n" +
+                   $"Belirlenen Hedef: {hedef}\n\n" +
+                   $"Uzman Tavsiyesi:\n{tavsiye}";
         }
     }
 }

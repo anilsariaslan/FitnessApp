@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using FitnessApp.Data;
 using FitnessApp.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity; // Üyeyi bulmak için lazım
 
 namespace FitnessApp.Controllers
 {
@@ -16,89 +12,108 @@ namespace FitnessApp.Controllers
     public class RandevularController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager; // Kullanıcı Yöneticisi
-
+        private readonly UserManager<IdentityUser> _userManager;
         public RandevularController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
             _userManager = userManager;
         }
 
-        // Randevularımı Listele
+        // 1. RANDEVULARI LİSTELE (Sadece kendi randevularım)
         public async Task<IActionResult> Index()
         {
-            var user = await _userManager.GetUserAsync(User); // Giriş yapan kullanıcıyı bul
+            var user = await _userManager.GetUserAsync(User);
 
-            // Eğer admin ise hepsini görsün, üye ise sadece kendininkileri
-            if (User.IsInRole("Admin"))
-            {
-                var tumRandevular = _context.Randevular.Include(r => r.Egitmen).Include(r => r.Uye);
-                return View(await tumRandevular.ToListAsync());
-            }
-            else
-            {
-                // Sadece benim randevularım
-                var benimRandevularim = _context.Randevular
-                    .Include(r => r.Egitmen)
-                    .Include(r => r.Uye)
-                    .Where(r => r.UyeId == user.Id);
+            // Eğer kullanıcı oturumu düşmüşse login'e at
+            if (user == null) return RedirectToAction("Login", "Account");
 
-                return View(await benimRandevularim.ToListAsync());
-            }
+            var randevular = await _context.Randevular
+                .Include(r => r.Egitmen) // Eğitmen adını da getir
+                .Where(r => r.UyeId == user.Id) // Sadece BENİM randevularım
+                .OrderByDescending(r => r.Tarih) // En yeni en üstte
+                .ToListAsync();
+
+            return View(randevular);
         }
 
-        // ÖZEL RANDEVU ALMA EKRANI (GET)
-        // Hangi eğitmene tıklandıysa onun ID'si buraya gelir
-        public IActionResult RandevuAl(int? egitmenId)
+        // 2. RANDEVU ALMA SAYFASINI AÇ (GET)
+        // Tarayıcıda .../Randevular/Create adresine gidince burası çalışır
+        public IActionResult Create()
         {
-            if (egitmenId == null) return NotFound();
-
-            var egitmen = _context.Egitmenler.Find(egitmenId);
-            ViewBag.EgitmenAd = egitmen.AdSoyad;
-
-            // Modeli hazırlayıp sayfaya gönderiyoruz
-            var randevu = new Randevu { EgitmenId = egitmenId.Value };
-            return View(randevu);
+            // Eğitmen listesini veritabanından çekip sayfaya gönderiyoruz
+            ViewData["EgitmenId"] = new SelectList(_context.Egitmenler, "Id", "AdSoyad");
+            return View();
         }
 
-        // ÖZEL RANDEVU KAYDETME (POST)
+        // 3. RANDEVUYU KAYDET (POST)
+        // "Randevu Al" butonuna basınca burası çalışır
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RandevuAl([Bind("EgitmenId,Tarih,Saat")] Randevu randevu)
+        public async Task<IActionResult> Create([Bind("EgitmenId,Tarih,Saat")] Randevu randevu)
         {
-            // Giriş yapan üyeyi bul ve randevuya ekle
+            // Giriş yapan kullanıcıyı bul
             var user = await _userManager.GetUserAsync(User);
-            randevu.UyeId = user.Id;
-            randevu.OlusturulmaTarihi = DateTime.Now;
+            if (user != null)
+            {
+                randevu.UyeId = user.Id;
+            }
 
-            // ModelState validasyonunu biraz gevşetiyoruz (UyeId zorunlu hatası vermesin diye)
-            // Çünkü UyeId'yi biz arkada atadık.
-            if (randevu.Tarih != DateTime.MinValue)
+            randevu.OlusturulmaTarihi = DateTime.Now;
+            ModelState.Remove("UyeId");
+            ModelState.Remove("Uye");
+            ModelState.Remove("Egitmen");
+
+            // --- 🛑 ÇAKIŞMA KONTROLÜ (EN ÖNEMLİ KISIM) ---
+            // Seçilen eğitmenin, o gün ve o saatte başka randevusu var mı?
+            bool cakismaVar = await _context.Randevular.AnyAsync(r =>
+                r.EgitmenId == randevu.EgitmenId &&
+                r.Tarih == randevu.Tarih &&
+                r.Saat == randevu.Saat);
+
+            if (cakismaVar)
+            {
+                // HATA VARSA: Kullanıcıya uyarı göster
+                ModelState.AddModelError("", "⚠️ Üzgünüz, bu eğitmenin seçtiğiniz saatte başka bir randevusu var. Lütfen başka bir saat seçiniz.");
+
+                // Sayfayı (Dropdown dolu şekilde) tekrar yükle
+                ViewData["EgitmenId"] = new SelectList(_context.Egitmenler, "Id", "AdSoyad", randevu.EgitmenId);
+                return View(randevu);
+            }
+            // ----------------------------------------------
+
+            // Geçmişe randevu alınmasını engelle (Opsiyonel ama iyi olur)
+            if (randevu.Tarih < DateTime.Today)
+            {
+                ModelState.AddModelError("", "Geçmiş bir tarihe randevu alamazsınız.");
+                ViewData["EgitmenId"] = new SelectList(_context.Egitmenler, "Id", "AdSoyad", randevu.EgitmenId);
+                return View(randevu);
+            }
+
+            // Her şey yolundaysa kaydet
+            if (ModelState.IsValid)
             {
                 _context.Add(randevu);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index)); // Randevularım sayfasına git
+                return RedirectToAction(nameof(Index)); // Listeye geri dön
             }
 
+            // Model geçerli değilse sayfayı tekrar göster
+            ViewData["EgitmenId"] = new SelectList(_context.Egitmenler, "Id", "AdSoyad", randevu.EgitmenId);
             return View(randevu);
         }
 
-        // --- ADMIN İÇİN OTOMATİK OLUŞAN KISIMLAR (SİLME DETAY VS) ---
+        // 4. RANDEVU SİL / İPTAL ET
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
-            var randevu = await _context.Randevular.Include(r => r.Egitmen).FirstOrDefaultAsync(m => m.Id == id);
-            if (randevu == null) return NotFound();
-            return View(randevu);
-        }
 
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
             var randevu = await _context.Randevular.FindAsync(id);
-            if (randevu != null) _context.Randevular.Remove(randevu);
-            await _context.SaveChangesAsync();
+            if (randevu != null)
+            {
+                _context.Randevular.Remove(randevu);
+                await _context.SaveChangesAsync();
+            }
+
             return RedirectToAction(nameof(Index));
         }
     }

@@ -1,8 +1,42 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Ana Sayfa";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="p-5 mb-4 bg-dark text-white rounded-3" style="background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80'); background-size: cover; background-position: center;">
+    <div class="container-fluid py-5 text-center">
+        <h1 class="display-4 fw-bold">Sağlıklı Bir Yaşam İçin Harekete Geçin</h1>
+        <p class="col-md-8 fs-5 mx-auto mt-3">
+            FitnessApp ile antrenman süreçlerinizi profesyonelce yönetin. Uzman eğitmen kadromuz ve kişiselleştirilmiş programlarımızla hedeflerinize ulaşmanız artık çok daha kolay.
+        </p>
+        <div class="d-flex justify-content-center gap-3 mt-4">
+            <a class="btn btn-primary btn-lg px-4" asp-controller="Egitmen" asp-action="Index">Eğitmenleri İncele</a>
+            <a class="btn btn-outline-light btn-lg px-4" asp-controller="YapayZeka" asp-action="Index">Vücut Analizi Yap</a>
+        </div>
+    </div>
+</div>
+
+<div class="row align-items-md-stretch">
+    <div class="col-md-4 mb-3">
+        <div class="h-100 p-4 text-white bg-secondary rounded-3">
+            <h3>Randevu Planlama</h3>
+            <p>Size uygun olan gün ve saatlerde, dilediğiniz eğitmenden randevu oluşturabilirsiniz. Sistem üzerinden geçmiş ve gelecek randevularınızı kolayca takip edin.</p>
+            <a class="btn btn-outline-light btn-sm mt-2" asp-controller="Randevular" asp-action="Index">Randevularım</a>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="h-100 p-4 bg-light border rounded-3">
+            <h3>Profesyonel Kadro</h3>
+            <p>Alanında deneyimli ve sertifikalı antrenörlerimiz hakkında detaylı bilgiye ulaşın. Uzmanlık alanlarına göre sizin için en doğru eğitmeni seçin.</p>
+            <a class="btn btn-outline-secondary btn-sm mt-2" asp-controller="Egitmen" asp-action="Index">Kadroyu Görüntüle</a>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="h-100 p-4 text-white bg-primary rounded-3">
+            <h3>Akıllı Vücut Analizi</h3>
+            <p>Fiziksel ölçülerinize ve hedeflerinize göre sistem tarafından otomatik oluşturulan beslenme ve antrenman tavsiyelerini inceleyin.</p>
+            <a class="btn btn-light text-primary fw-bold btn-sm mt-2" asp-controller="YapayZeka" asp-action="Index">Analizi Başlat</a>
+        </div>
+    </div>
 </div>
